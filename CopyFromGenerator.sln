@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyFromGenerator", "CopyFr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyFromGenerator.Tests", "CopyFromGenerator.Tests\CopyFromGenerator.Tests.csproj", "{D81237FE-B962-E83A-19CD-268E22C1BF14}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManualTest", "ManualTest\ManualTest.csproj", "{D99B463E-EED4-4B19-A5AE-3CAA19E92001}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,6 +22,10 @@ Global
 		{D81237FE-B962-E83A-19CD-268E22C1BF14}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D81237FE-B962-E83A-19CD-268E22C1BF14}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D81237FE-B962-E83A-19CD-268E22C1BF14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D99B463E-EED4-4B19-A5AE-3CAA19E92001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D99B463E-EED4-4B19-A5AE-3CAA19E92001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D99B463E-EED4-4B19-A5AE-3CAA19E92001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D99B463E-EED4-4B19-A5AE-3CAA19E92001}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

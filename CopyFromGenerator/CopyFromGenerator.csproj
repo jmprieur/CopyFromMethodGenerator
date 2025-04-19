@@ -9,7 +9,7 @@
 
     <!-- NuGet package settings -->
     <PackageId>CopyFromGenerator</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>CopyFromGenerator Contributors</Authors>
     <Description>A C# source generator that automatically generates CopyFrom methods for classes</Description>
     <PackageTags>source-generator;codegen;roslyn;copymethod</PackageTags>
@@ -19,8 +19,9 @@
 
     <!-- Source Generator specific settings -->
     <IncludeBuildOutput>true</IncludeBuildOutput>
-    <DevelopmentDependency>true</DevelopmentDependency>
+    <DevelopmentDependency>false</DevelopmentDependency>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,5 +33,11 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" PrivateAssets="all" />
   </ItemGroup>
+
+  <Target Name="CopyProjectReferencesToPackage" DependsOnTargets="BuildOnlySettings;ResolveReferences">
+    <ItemGroup>
+      <BuildOutputInPackage Include="$(OutputPath)$(AssemblyName).dll" />
+    </ItemGroup>
+  </Target>
 
 </Project>
