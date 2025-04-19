@@ -1,8 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
-using System.Collections.Immutable;
-using System.Reflection;
 
 namespace CopyFromGenerator.Tests
 {
@@ -17,7 +15,7 @@ using CopyFromGenerator;
 
 namespace TestNamespace
 {
-    [CopyFrom]
+    [GenerateCopyFromMethod]
     public partial class Person
     {
         public string Name { get; set; }
@@ -39,7 +37,7 @@ namespace TestNamespace
 
             // Assert generated code contains expected property copies
             var runResult = driver.GetRunResult();
-            var generatedCode = runResult.GeneratedTrees[1].ToString(); // Index 1 is our class (0 is attribute)
+            var generatedCode = runResult.GeneratedTrees[0].ToString(); // Index 0 is our class
 
             Assert.Contains("this.Name = source.Name", generatedCode);
             Assert.Contains("this.Age = source.Age", generatedCode);
@@ -60,7 +58,7 @@ namespace TestNamespace
         public string BaseProperty { get; set; }
     }
 
-    [CopyFrom]
+    [GenerateCopyFromMethod]
     public partial class DerivedClass : BaseClass
     {
         public int DerivedProperty { get; set; }
@@ -73,7 +71,7 @@ namespace TestNamespace
             var generatorDriver = driver.RunGenerators(compilation);
 
             var runResult = generatorDriver.GetRunResult();
-            var generatedCode = runResult.GeneratedTrees[1].ToString();
+            var generatedCode = runResult.GeneratedTrees[0].ToString();
 
             Assert.Contains("if (base is BaseClass baseThis)", generatedCode);
             Assert.Contains("baseThis.CopyFrom(source)", generatedCode);

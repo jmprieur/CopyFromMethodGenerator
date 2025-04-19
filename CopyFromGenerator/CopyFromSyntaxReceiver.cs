@@ -6,8 +6,8 @@ namespace CopyFromGenerator
 {
     internal class CopyFromSyntaxReceiver : ISyntaxReceiver
     {
-        private const string AttributeName = "CopyFrom";
-        private const string FullAttributeName = "CopyFromAttribute";
+        private const string AttributeName = "GenerateCopyFromMethod";
+        private const string FullAttributeName = "GenerateCopyFromMethodAttribute";
 
         public List<ClassDeclarationSyntax> CandidateClasses { get; } = new();
 

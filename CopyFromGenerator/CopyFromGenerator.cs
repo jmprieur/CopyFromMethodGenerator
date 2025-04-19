@@ -17,16 +17,6 @@ namespace CopyFromGenerator
 
         public void Execute(GeneratorExecutionContext context)
         {
-            // Add the attribute
-            context.AddSource("CopyFromAttribute.g.cs", SourceText.From(@"
-using System;
-namespace CopyFromGenerator
-{
-    [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = false)]
-    internal sealed class CopyFromAttribute : Attribute
-    {
-    }
-}", Encoding.UTF8));
 
             if (context.SyntaxReceiver is not CopyFromSyntaxReceiver receiver)
                 return;
