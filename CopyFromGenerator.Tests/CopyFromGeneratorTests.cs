@@ -74,8 +74,7 @@ namespace TestNamespace
             var generatedCode = runResult.GeneratedTrees[0].ToString();
 
             // Since BaseClass doesn't have CopyFrom, the generated code shouldn't include base calls
-            Assert.DoesNotContain("if (base is BaseClass baseThis)", generatedCode);
-            Assert.DoesNotContain("baseThis.CopyFrom(source)", generatedCode);
+            Assert.DoesNotContain("base.CopyFrom(source)", generatedCode);
             Assert.Contains("this.DerivedProperty = source.DerivedProperty", generatedCode);
         }
 
@@ -113,8 +112,7 @@ namespace TestNamespace
             var generatedCode = runResult.GeneratedTrees[0].ToString();
 
             // Since BaseClass has CopyFrom, the generated code should include base calls
-            Assert.Contains("if (base is BaseClass baseThis)", generatedCode);
-            Assert.Contains("baseThis.CopyFrom(source)", generatedCode);
+            Assert.Contains("base.CopyFrom(source)", generatedCode);
             Assert.Contains("this.DerivedProperty = source.DerivedProperty", generatedCode);
         }
 

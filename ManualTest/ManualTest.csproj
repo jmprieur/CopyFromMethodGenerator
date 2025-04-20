@@ -5,13 +5,18 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+	  <WIP>true</WIP>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="CopyFromGenerator" Version="1.0.7">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
+	<ItemGroup Condition="'$(WIP)' == 'true'">
+		<ProjectReference Include="..\CopyFromGenerator\CopyFromGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+	</ItemGroup>
 
+	<ItemGroup Condition="'$(WIP)' == 'false'">
+		<PackageReference Include="CopyFromGenerator" Version="1.0.7">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+	</ItemGroup>
+	
 </Project>
