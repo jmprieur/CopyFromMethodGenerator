@@ -55,14 +55,26 @@ namespace CopyFromGenerator
                 source.AppendLine("            if (source is null) throw new System.ArgumentNullException(nameof(source));");
                 source.AppendLine();
 
-                // Call base.CopyFrom if base class exists and has CopyFrom method
+                // Call base.CopyFrom if base class exists and has compatible CopyFrom method
                 if (baseType != null && baseType.Name != "Object")
                 {
-                    source.AppendLine($"            if (base is {baseType.Name} baseThis)");
-                    source.AppendLine("            {");
-                    source.AppendLine("                baseThis.CopyFrom(source);");
-                    source.AppendLine("            }");
-                    source.AppendLine();
+                    bool hasCopyFromMethod = baseType.GetMembers()
+                        .OfType<IMethodSymbol>()
+                        .Any(m => m.Name == "CopyFrom" && 
+                                 m.Parameters.Length == 1 && 
+                                 m.Parameters[0].Type.Equals(baseType, SymbolEqualityComparer.Default) &&
+                                 m.DeclaredAccessibility == Accessibility.Public);
+                    if (!hasCopyFromMethod)
+                    {
+                        hasCopyFromMethod = baseType.GetAttributes()
+                            .Any(a => a.AttributeClass?.Name == "GenerateCopyFromMethodAttribute");
+                    }
+
+                    if (hasCopyFromMethod)
+                    {
+                        source.AppendLine("            base.CopyFrom(source);");
+                        source.AppendLine();
+                    }
                 }
 
                 // Copy properties

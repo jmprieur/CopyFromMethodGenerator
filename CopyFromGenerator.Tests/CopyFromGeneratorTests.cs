@@ -46,7 +46,7 @@ namespace TestNamespace
         }
 
         [Fact]
-        public void TestInheritance()
+        public void TestInheritanceWithoutBaseCopyFrom()
         {
             var source = @"
 using CopyFromGenerator;
@@ -73,6 +73,46 @@ namespace TestNamespace
             var runResult = generatorDriver.GetRunResult();
             var generatedCode = runResult.GeneratedTrees[0].ToString();
 
+            // Since BaseClass doesn't have CopyFrom, the generated code shouldn't include base calls
+            Assert.DoesNotContain("if (base is BaseClass baseThis)", generatedCode);
+            Assert.DoesNotContain("baseThis.CopyFrom(source)", generatedCode);
+            Assert.Contains("this.DerivedProperty = source.DerivedProperty", generatedCode);
+        }
+
+        [Fact]
+        public void TestInheritanceWithBaseCopyFrom()
+        {
+            var source = @"
+using CopyFromGenerator;
+
+namespace TestNamespace
+{
+    public class BaseClass
+    {
+        public string BaseProperty { get; set; }
+        public void CopyFrom(BaseClass source) 
+        {
+            if (source == null) throw new System.ArgumentNullException(nameof(source));
+            this.BaseProperty = source.BaseProperty;
+        }
+    }
+
+    [GenerateCopyFromMethod]
+    public partial class DerivedClass : BaseClass
+    {
+        public int DerivedProperty { get; set; }
+    }
+}";
+
+            var compilation = CreateCompilation(source);
+            var generator = new CopyFromGenerator();
+            var driver = CSharpGeneratorDriver.Create(generator);
+            var generatorDriver = driver.RunGenerators(compilation);
+
+            var runResult = generatorDriver.GetRunResult();
+            var generatedCode = runResult.GeneratedTrees[0].ToString();
+
+            // Since BaseClass has CopyFrom, the generated code should include base calls
             Assert.Contains("if (base is BaseClass baseThis)", generatedCode);
             Assert.Contains("baseThis.CopyFrom(source)", generatedCode);
             Assert.Contains("this.DerivedProperty = source.DerivedProperty", generatedCode);

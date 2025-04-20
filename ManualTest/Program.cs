@@ -11,14 +11,21 @@ public partial class Person
     public string Name { get; set; } = "";
     public int Age { get; set; }
     public string Address { get; set; } = "";
+
+}
+
+[GenerateCopyFromMethod]
+public partial class Employee : Person
+{
+    public string BadgeNumber { get; set; } = "";
 }
 
 public class Program
 {
     public static void Main()
     {
-        var person1 = new Person { Name = "John", Age = 30, Address = "USA" };
-        var person2 = new Person();
+        var person1 = new Employee { Name = "John", Age = 30, Address = "USA" };
+        var person2 = new Employee();
         
         person2.CopyFrom(person1);
         

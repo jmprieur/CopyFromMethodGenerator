@@ -9,7 +9,7 @@
 
 		<!-- NuGet package settings -->
 		<PackageId>CopyFromGenerator</PackageId>
-		<Version>1.0.4</Version>
+		<Version>1.0.7</Version>
 		<Authors>CopyFromGenerator Contributors</Authors>
 		<Description>A C# source generator that automatically generates CopyFrom methods for classes</Description>
 		<PackageTags>source-generator;codegen;roslyn;copymethod</PackageTags>
