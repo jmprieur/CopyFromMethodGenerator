@@ -28,6 +28,7 @@ namespace CopyFromGenerator
 
                 var containingType = methodSymbol.ContainingType;
                 var sourceType = methodSymbol.Parameters[0].Type;
+                var sourceTypeNamespace = sourceType.ContainingNamespace.ToDisplayString();
                 var methodName = methodSymbol.Name;
                 var parameterName = methodSymbol.Parameters[0].Name;
 
@@ -44,14 +45,14 @@ namespace CopyFromGenerator
                 var implementation = new StringBuilder();
                 if (!string.IsNullOrEmpty(containingType.ContainingNamespace?.ToDisplayString()))
                 {
-                    implementation.AppendLine($"namespace {containingType.ContainingNamespace.ToDisplayString()}");
+                    implementation.AppendLine($"namespace {containingType.ContainingNamespace!.ToDisplayString()}");
                     implementation.AppendLine("{");
                 }
 
                 implementation.AppendLine($"   partial class {containingType.Name}");
                 implementation.AppendLine("    {");
 
-                implementation.AppendLine($"       public partial void {methodName}({sourceType.Name} {parameterName})");
+                implementation.AppendLine($"       public partial void {methodName}({sourceTypeNamespace}.{sourceType.Name} {parameterName})");
                 implementation.AppendLine("        {");
                 implementation.AppendLine($"            if ({parameterName} is null) throw new System.ArgumentNullException(nameof({parameterName}));");
                 implementation.AppendLine();
@@ -90,7 +91,7 @@ namespace CopyFromGenerator
                 properties.AddRange(type.GetMembers()
                     .OfType<IPropertySymbol>()
                     .Where(p => p.DeclaredAccessibility == Accessibility.Public).ToArray());
-                type = type.BaseType;
+                type = type.BaseType!;
             }
             return properties;
         }
