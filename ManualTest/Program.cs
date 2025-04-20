@@ -8,8 +8,13 @@ public partial class Customer
     public string Name { get; set; } = "";
     public int Age { get; set; }
     public string Address { get; set; } = "";
+
+    [GenerateCopyFromMethod]
+    public partial void CopyFrom(Employee employee);
+
     [GenerateCopyFromMethod]
     public partial void CopyFrom(Person person);
+
 }
 
 // Target classes demonstrating both generators

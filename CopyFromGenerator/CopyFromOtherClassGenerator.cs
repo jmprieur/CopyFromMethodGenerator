@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
 namespace CopyFromGenerator
@@ -29,16 +29,16 @@ namespace CopyFromGenerator
                 var containingType = methodSymbol.ContainingType;
                 var sourceType = methodSymbol.Parameters[0].Type;
                 var methodName = methodSymbol.Name;
+                var parameterName = methodSymbol.Parameters[0].Name;
 
-                // Get all public readable properties from source type
-                var sourceProperties = sourceType.GetMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(p => p.DeclaredAccessibility == Accessibility.Public && p.GetMethod != null);
+                // Get all public readable properties from source type and its base classes
+                var sourceProperties = GetAllAccessibleProperties(sourceType)
+                    .Where(p => p.GetMethod != null);
 
-                // Get all public writable properties from containing type
-                var targetProperties = containingType.GetMembers()
-                    .OfType<IPropertySymbol>()
-                    .Where(p => p.DeclaredAccessibility == Accessibility.Public && p.SetMethod != null);
+                // Get all public writable properties from containing type and its base classes
+                var targetProperties = GetAllAccessibleProperties(containingType)
+                    .Where(p => p.SetMethod != null);
+
 
                 // Generate implementation
                 var implementation = new StringBuilder();
@@ -51,9 +51,9 @@ namespace CopyFromGenerator
                 implementation.AppendLine($"   partial class {containingType.Name}");
                 implementation.AppendLine("    {");
 
-                implementation.AppendLine($"       public partial void {methodName}({sourceType.Name} source)");
+                implementation.AppendLine($"       public partial void {methodName}({sourceType.Name} {parameterName})");
                 implementation.AppendLine("        {");
-                implementation.AppendLine("            if (source is null) throw new System.ArgumentNullException(nameof(source));");
+                implementation.AppendLine($"            if ({parameterName} is null) throw new System.ArgumentNullException(nameof({parameterName}));");
                 implementation.AppendLine();
 
                 foreach (var targetProp in targetProperties)
@@ -61,7 +61,7 @@ namespace CopyFromGenerator
                     var sourceProp = sourceProperties.FirstOrDefault(p => p.Name == targetProp.Name);
                     if (sourceProp != null && IsTypeAssignable(sourceProp.Type, targetProp.Type, context.Compilation))
                     {
-                        implementation.AppendLine($"            this.{targetProp.Name} = source.{sourceProp.Name};");
+                        implementation.AppendLine($"            this.{targetProp.Name} = {parameterName}.{sourceProp.Name};");
                     }
                 }
 
@@ -80,6 +80,19 @@ namespace CopyFromGenerator
                 var implementationFileName = $"Generated{containingType.Name}_{sourceType.Name}.g.cs";
                 context.AddSource(implementationFileName, SourceText.From(implementation.ToString(), Encoding.UTF8));
             }
+        }
+
+        private IEnumerable<IPropertySymbol> GetAllAccessibleProperties(ITypeSymbol type)
+        {
+            var properties = new List<IPropertySymbol>();
+            while (type != null && type.SpecialType != SpecialType.System_Object)
+            {
+                properties.AddRange(type.GetMembers()
+                    .OfType<IPropertySymbol>()
+                    .Where(p => p.DeclaredAccessibility == Accessibility.Public).ToArray());
+                type = type.BaseType;
+            }
+            return properties;
         }
 
         private bool IsTypeAssignable(ITypeSymbol sourceType, ITypeSymbol targetType, Compilation compilation)
