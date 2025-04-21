@@ -58,6 +58,7 @@ namespace CopyFromGenerator
                     implementation.AppendLine("{");
                 }
 
+                implementation.AppendLine($"#pragma warning disable CS0618 // obsolete");
                 implementation.AppendLine($"   partial class {containingType.Name}");
                 implementation.AppendLine("    {");
 
@@ -101,6 +102,8 @@ namespace CopyFromGenerator
 
 
                 implementation.AppendLine("    }");
+                implementation.AppendLine($"#pragma warning restore CS0618 // obsolete");
+
 
                 if (!string.IsNullOrEmpty(containingType.ContainingNamespace?.ToDisplayString()))
                 {
