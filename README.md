@@ -4,11 +4,30 @@ A C# source generator that automatically generates property copying methods for 
 
 ## Installation
 
+### By NuGet
+
 Install the package via NuGet:
 
 ```sh
 dotnet add package CopyFromGenerator
 ```
+
+The project file should contain somethig like this:
+```xml
+	<PackageReference Include="CopyFromGenerator" Version="1.0.7">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+```
+
+### By Project Reference
+If you choose to reference the project directly, you'll need to add the following to your `.csproj` file:
+
+```xml
+    <ProjectReference Include="..\CopyFromGenerator\CopyFromGenerator\CopyFromGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+```        
+
+Note the `OutputItemType` and `ReferenceOutputAssembly` attributes.
 
 ## Same-Class Property Copying
 
