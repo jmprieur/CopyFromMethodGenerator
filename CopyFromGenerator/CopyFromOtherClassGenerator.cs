@@ -39,6 +39,7 @@ namespace CopyFromGenerator
                 var sourceName = isStatic ? methodSymbol.Parameters[1].Name : methodSymbol.Parameters[0].Name;
                 var destinationName = isStatic ? methodSymbol.Parameters[0].Name : "this";
                 string extensionMethodThis = methodSymbol.IsExtensionMethod ? "this " : string.Empty;
+                string methodVisibility = methodSymbol.DeclaredAccessibility.ToString().ToLowerInvariant();
 
                 // Get all public readable properties from source type and its base classes
                 var sourceProperties = GetAllAccessibleProperties(sourceType)
@@ -60,7 +61,7 @@ namespace CopyFromGenerator
                 implementation.AppendLine($"   partial class {containingType.Name}");
                 implementation.AppendLine("    {");
 
-                implementation.AppendLine($"       public {(isStatic ? "static " : "")}partial void {methodName}({(isStatic ? $"{extensionMethodThis}{destinationType} {methodSymbol.Parameters[0].Name}, " : "")}{sourceTypeNamespace}.{sourceType.Name} {sourceName})");
+                implementation.AppendLine($"       {methodVisibility} {(isStatic ? "static " : "")}partial void {methodName}({(isStatic ? $"{extensionMethodThis}{destinationType} {methodSymbol.Parameters[0].Name}, " : "")}{sourceTypeNamespace}.{sourceType.Name} {sourceName})");
                 implementation.AppendLine("        {");
                 implementation.AppendLine($"            if ({sourceName} is null) throw new System.ArgumentNullException(nameof({sourceName}));");
                 if (isStatic)
@@ -72,9 +73,26 @@ namespace CopyFromGenerator
                 foreach (var targetProp in targetProperties)
                 {
                     var sourceProp = sourceProperties.FirstOrDefault(p => p.Name == targetProp.Name);
-                    if (sourceProp != null && IsTypeAssignable(sourceProp.Type, targetProp.Type, context.Compilation))
+                    if (sourceProp == null)
+                    {
+                        implementation.AppendLine($"            // no source property found for {destinationName}.{targetProp.Name}");
+                    }
+                    else if (IsTypeAssignable(sourceProp.Type, targetProp.Type, context.Compilation))
                     {
                         implementation.AppendLine($"            {destinationName}.{targetProp.Name} = {sourceName}.{sourceProp.Name};");
+                    }
+                    else
+                    {
+                        implementation.AppendLine($"            // can't assign {sourceName}.{sourceProp.Name} to {destinationName}.{targetProp.Name}");
+                    }
+                }
+
+                foreach(var sourceProperty in sourceProperties)
+                {
+                    var targetProperty = targetProperties.FirstOrDefault(p => p.Name == sourceProperty.Name);
+                    if (targetProperty == null)
+                    {
+                        implementation.AppendLine($"            // no target property found for {sourceName}.{sourceProperty.Name}");
                     }
                 }
 
@@ -90,7 +108,7 @@ namespace CopyFromGenerator
                 }
 
                 // Add implementation
-                var implementationFileName = $"Generated{containingType.Name}_{sourceType.Name}.g.cs";
+                var implementationFileName = $"Generated{containingType.Name}_{destinationType.Name}_{sourceType.Name}.g.cs";
                 context.AddSource(implementationFileName, SourceText.From(implementation.ToString(), Encoding.UTF8));
             }
         }
