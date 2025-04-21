@@ -121,6 +121,53 @@ namespace TestNamespace
             Assert.DoesNotContain("this.Private = source", generatedCode); // Private property should be skipped
         }
 
+        [Fact]
+        public void TestStaticPropertyCopying()
+        {
+            var source = @"
+using CopyFromGenerator;
+
+namespace TestNamespace
+{
+    public class SourceClass
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+    }
+
+    public partial class TargetClass
+    {
+        public string Name { get; set; }
+        public int Age { get; set; }
+
+    }
+
+    public static partial class Transformer
+    {
+        [GenerateCopyFromMethod]
+        public static partial void CopyProperties(TargetClass destination, SourceClass source);
+    }
+}";
+            var compilation = CreateCompilation(source);
+            var generator = new CopyFromOtherClassGenerator();
+            var driver = CSharpGeneratorDriver.Create(generator);
+            var generatorDriver = driver.RunGenerators(compilation);
+
+            var runResult = generatorDriver.GetRunResult();
+            var generatedCode = runResult.GeneratedTrees[0].ToString();
+
+            // Verify static method generation
+            Assert.Contains("public static partial void CopyProperties", generatedCode);
+            
+            // Verify proper parameter usage in property assignments
+            Assert.Contains("destination.Name = source.Name", generatedCode);
+            Assert.Contains("destination.Age = source.Age", generatedCode);
+
+            // Verify null checks for both parameters
+            Assert.Contains("if (source is null) throw new System.ArgumentNullException(nameof(source))", generatedCode);
+            Assert.Contains("if (destination is null) throw new System.ArgumentNullException(nameof(destination))", generatedCode);
+        }
+
         private static Compilation CreateCompilation(string source)
         {
             var references = new[]

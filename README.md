@@ -46,30 +46,27 @@ public void CopyFrom(Person source)
 
 ### Cross-Class Property Copying
 
-The `GenerateCopyFromMethod` attribute lets you generate methods that copy properties from different classes:
+The `GenerateCopyFromMethod` attribute lets you generate methods that copy properties from different classes. You can use either instance methods or static methods:
 
 ```csharp
-public class PersonBase
+// Instance method approach
+public partial class Employee
 {
-    public string Name { get; set; }    // Base class property
-}
-
-[GenerateCopyFromMethod]              // Can use both generators together
-public partial class Employee : PersonBase
-{
-    public int Age { get; set; }        // Derived class property
+    public string Name { get; set; }
+    public int Age { get; set; }
     
-    [GenerateCopyFromMethod]     // Generate cross-class copying
-    partial void CopyFromCustomer(Customer source);
+    [GenerateCopyFromMethod]
+    partial void CopyFromCustomer(Customer source);  // Instance method with one parameter
 }
 
+// Static method approach
 public partial class Customer
 {
     public string Name { get; set; }
     public int Age { get; set; }
 
     [GenerateCopyFromMethod]
-    partial void CopyFromEmployee(Employee source); // Generator implements this
+    public static partial void CopyProperties(Customer destination, Employee source);  // Static method with two parameters
 }
 ```
 
@@ -79,15 +76,26 @@ The generator creates implementations that:
 - Include properties from base classes
 - Skip inaccessible or read-only properties
 
-Generated code example:
+The generator creates two types of implementations:
 
 ```csharp
-partial void CopyFromEmployee(Employee source)
+// Instance method implementation
+partial void CopyFromCustomer(Customer source)
 {
     if (source is null) throw new ArgumentNullException(nameof(source));
     
-    this.Name = source.Name;  // Copied from Employee's base class
-    this.Age = source.Age;    // Copied from Employee
+    this.Name = source.Name;
+    this.Age = source.Age;
+}
+
+// Static method implementation
+public static partial void CopyProperties(Customer destination, Employee source)
+{
+    if (destination is null) throw new ArgumentNullException(nameof(destination));
+    if (source is null) throw new ArgumentNullException(nameof(source));
+    
+    destination.Name = source.Name;
+    destination.Age = source.Age;
 }
 ```
 
@@ -110,9 +118,10 @@ public partial class DerivedClass : BaseClass
 
 ## Features
 
-- Two types of property copying:
+- Three types of property copying:
   - Same-class copying with `[GenerateCopyFromMethod]`
-  - Cross-class copying with `[GenerateCopyFromMethod]`
+  - Cross-class copying with instance methods
+  - Cross-class copying with static methods (can be an extension method)
 - Copies all public, writable properties
 - Supports inheritance and base class properties
 - Performs type compatibility checking

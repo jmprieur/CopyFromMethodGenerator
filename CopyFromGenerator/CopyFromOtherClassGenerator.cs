@@ -24,20 +24,28 @@ namespace CopyFromGenerator
             {
                 var model = context.Compilation.GetSemanticModel(methodDeclaration.SyntaxTree);
                 var methodSymbol = model.GetDeclaredSymbol(methodDeclaration) as IMethodSymbol;
-                if (methodSymbol == null || methodSymbol.Parameters.Length != 1) continue;
+                if (methodSymbol == null) continue;
 
+                bool isStatic = methodSymbol.IsStatic && methodSymbol.Parameters.Length == 2;
+                if (!isStatic && methodSymbol.Parameters.Length != 1) continue;
                 var containingType = methodSymbol.ContainingType;
-                var sourceType = methodSymbol.Parameters[0].Type;
+                
+                // For static methods with 2 parameters, first is destination, second is source
+                // For instance methods with 1 parameter, instance is destination, parameter is source
+                var sourceType = isStatic ? methodSymbol.Parameters[1].Type : methodSymbol.Parameters[0].Type;
                 var sourceTypeNamespace = sourceType.ContainingNamespace.ToDisplayString();
                 var methodName = methodSymbol.Name;
-                var parameterName = methodSymbol.Parameters[0].Name;
+                var destinationType = isStatic ? methodSymbol.Parameters[0].Type : containingType;
+                var sourceName = isStatic ? methodSymbol.Parameters[1].Name : methodSymbol.Parameters[0].Name;
+                var destinationName = isStatic ? methodSymbol.Parameters[0].Name : "this";
+                string extensionMethodThis = methodSymbol.IsExtensionMethod ? "this " : string.Empty;
 
                 // Get all public readable properties from source type and its base classes
                 var sourceProperties = GetAllAccessibleProperties(sourceType)
                     .Where(p => p.GetMethod != null);
 
                 // Get all public writable properties from containing type and its base classes
-                var targetProperties = GetAllAccessibleProperties(containingType)
+                var targetProperties = GetAllAccessibleProperties(destinationType)
                     .Where(p => p.SetMethod != null);
 
 
@@ -52,9 +60,13 @@ namespace CopyFromGenerator
                 implementation.AppendLine($"   partial class {containingType.Name}");
                 implementation.AppendLine("    {");
 
-                implementation.AppendLine($"       public partial void {methodName}({sourceTypeNamespace}.{sourceType.Name} {parameterName})");
+                implementation.AppendLine($"       public {(isStatic ? "static " : "")}partial void {methodName}({(isStatic ? $"{extensionMethodThis}{destinationType} {methodSymbol.Parameters[0].Name}, " : "")}{sourceTypeNamespace}.{sourceType.Name} {sourceName})");
                 implementation.AppendLine("        {");
-                implementation.AppendLine($"            if ({parameterName} is null) throw new System.ArgumentNullException(nameof({parameterName}));");
+                implementation.AppendLine($"            if ({sourceName} is null) throw new System.ArgumentNullException(nameof({sourceName}));");
+                if (isStatic)
+                {
+                    implementation.AppendLine($"            if ({methodSymbol.Parameters[0].Name} is null) throw new System.ArgumentNullException(nameof({methodSymbol.Parameters[0].Name}));");
+                }
                 implementation.AppendLine();
 
                 foreach (var targetProp in targetProperties)
@@ -62,7 +74,7 @@ namespace CopyFromGenerator
                     var sourceProp = sourceProperties.FirstOrDefault(p => p.Name == targetProp.Name);
                     if (sourceProp != null && IsTypeAssignable(sourceProp.Type, targetProp.Type, context.Compilation))
                     {
-                        implementation.AppendLine($"            this.{targetProp.Name} = {parameterName}.{sourceProp.Name};");
+                        implementation.AppendLine($"            {destinationName}.{targetProp.Name} = {sourceName}.{sourceProp.Name};");
                     }
                 }
 

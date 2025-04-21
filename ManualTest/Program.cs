@@ -32,6 +32,13 @@ public partial class Employee : Person
     public string Department { get; set; } = "";
 }
 
+public static partial class Transformer
+{
+    [GenerateCopyFromMethod]
+    public static partial void CopyFrom(Employee employee, Customer customer);
+}
+
+
 public class Program
 {
     public static void Main()
@@ -45,6 +52,12 @@ public class Program
         // Test CopyFromOtherMethod generator (copying from other types)
         var customer = new Customer();
         customer.CopyFrom(employee2);
-        Console.WriteLine($"Customer from Employee - Name: {customer.Name}, Age: {customer.Age}"); // Address not copied as Pet doesn't have it
+        Console.WriteLine($"Customer from Employee - Name: {customer.Name}, Age: {customer.Age}"); 
+
+        // Test static method
+        Employee employee3 = new Employee();
+        Transformer.CopyFrom(employee3, customer);
+        Console.WriteLine($"Employee from Employee - Name: {employee3.Name}, Age: {employee3.Age}"); 
+
     }
 }
