@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CopyFromGenerator\CopyFromGenerator.csproj" />
+    <ProjectReference Include="..\ManualTest\ManualTest.csproj" />
   </ItemGroup>
 
 </Project>
