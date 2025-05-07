@@ -153,3 +153,15 @@ public partial class DerivedClass : BaseClass
 
 - .NET Standard 2.0 or higher
 - C# 8.0 or higher
+
+## troubleshooting
+
+If you want to see the generated files under the obj\Generated folder, add the following to your project
+Otherwise you can see them in Visual Studio under "References" | "Analyzers" | "CopyFromGenerator"
+
+```xml
+<PropertyGroup>
+   <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+   <CompilerGeneratedFilesOutputPath>$(BaseIntermediateOutputPath)\Generated</CompilerGeneratedFilesOutputPath>
+</PropertyGroup>
+````
